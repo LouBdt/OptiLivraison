@@ -4,9 +4,10 @@ import fonctions as f
 import numpy as np
 import numpy.random as r
 import matplotlib.pyplot as plt
-def main(override, cps):
+
+
+def main(override, cps, BDDGeoloc):
     nombre_dessais = 1000
-    BDDGeoloc = f.lireGeo("BDDgeoloc.xlsx")
     echantillon = []
     if not override:
         CP_depart = input("Code postal de départ:")
@@ -105,9 +106,9 @@ def main(override, cps):
             plt.annotate(label, ([float(k[0]) for k in meilleur+moyen+pire][i],[float(k[1]) for k in meilleur+moyen+pire][i]))
         plt.show()
     
-    f.tracerChemin(moyen[0], echantillon, 'blue')
-    # f.tracerChemin(pire[0], echantillon, 'grey')
-    f.tracerChemin(meilleur[0], echantillon, 'green')
+    f.tracerChemin(moyen[0], echantillon, 'blue', "Shortest Path")
+    # f.tracerChemin(pire[0], echantillon, 'grey', "Worst path")
+    f.tracerChemin(meilleur[0], echantillon, 'green', "Low carbon Path")
     print("Le trajet vert est "+str(int(100*(meilleurBCpourN-BC_ordre_moyen)/BC_ordre_moyen))+"% moins émissif que le trajet bleu")
     # print("Le trajet vert est "+str(int(100*(meilleurBCpourN-worst)/worst))+"% moins émissif que le trajet gris")
     return (meilleurBCpourN-BC_ordre_moyen)/BC_ordre_moyen
@@ -115,6 +116,7 @@ def main(override, cps):
 
 MULTITEST = True
 
+BDDGeoloc = f.lireGeo("BDDgeoloc.xlsx")
 if MULTITEST:
     iterations = 100
     minimum_points = 5      #En dessous de 5 c'est pas très intéressant
@@ -129,7 +131,7 @@ if MULTITEST:
             x.append(i)
             sample = r.randint(0,len(codes_p),i)
             print("Test n°" + str((i-minimum_points)*iterations+j))
-            score = abs(100*main(True,[codes_p[k]for k in sample]))
+            score = abs(100*main(True,[codes_p[k]for k in sample],BDDGeoloc))
             y.append(score)
         
     E = [[j,[y[i] for i in range(len(y)) if x[i]==j]] for j in range(minimum_points,maximum_points)]
@@ -150,6 +152,6 @@ if MULTITEST:
     plt.scatter(moyennes[0],moyennes[1], c = 'r')
     print("En moyenne, les trajets verts permettent d'émettre "+str(int(10*sum(moyennes[1])/len(moyennes[1]))/10)+"% moins que les trajets les plus courts, en bleu")
 else:
-    score = abs(100*main(False,[]))
+    score = abs(100*main(False,[],BDDGeoloc))
     print("Le bilan carbone du trajet optimisé est "+str(score)+"% moins émissif que le plus court trajet")
     
